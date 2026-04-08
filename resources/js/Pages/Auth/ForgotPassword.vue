@@ -4,7 +4,10 @@ import InputError from '@/Components/InputError.vue'
 import InputLabel from '@/Components/InputLabel.vue'
 import PrimaryButton from '@/Components/PrimaryButton.vue'
 import TextInput from '@/Components/TextInput.vue'
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, Link, useForm } from '@inertiajs/vue3'
+import { useTranslate } from '@/composables/useTranslate'
+
+const { t } = useTranslate()
 
 defineProps({
   status: {
@@ -24,12 +27,17 @@ const submit = () => {
 
 <template>
   <GuestLayout>
-    <Head title="Forgot Password" />
+    <Head :title="t('auth.forgotPasswordTitle')" />
+
+    <Link
+      :href="route('login')"
+      class="mb-4 inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+    >
+      {{ t('auth.back') }}
+    </Link>
 
     <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-      Forgot your password? No problem. Just let us know your email
-      address and we will email you a password reset link that will allow
-      you to choose a new one.
+      {{ t('auth.forgotPasswordText') }}
     </div>
 
     <div
@@ -41,7 +49,7 @@ const submit = () => {
 
     <form @submit.prevent="submit">
       <div>
-        <InputLabel for="email" value="Email" />
+        <InputLabel for="email" :value="t('auth.email')" />
 
         <TextInput
           id="email"
@@ -61,7 +69,7 @@ const submit = () => {
           :class="{ 'opacity-25': form.processing }"
           :disabled="form.processing"
         >
-          Email Password Reset Link
+          {{ t('auth.sendResetLink') }}
         </PrimaryButton>
       </div>
     </form>

@@ -4,25 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-/**
- * @property int $id
- * @property string $name
- * @property int|null $user_id
- * @property bool $is_shared
- * @property int $min_players
- * @property int $max_players
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property User|null $user
- * @property Collection<int, Friend> $friends
- */
 class Game extends Model
 {
     use HasFactory;
@@ -35,6 +22,11 @@ class Game extends Model
         "max_players",
     ];
 
+    public function scopeVisibleTo(Builder $query, int $userId): Builder
+    {
+        return $query->where("user_id", $userId)->orWhere("is_shared", true);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -45,6 +37,12 @@ class Game extends Model
         return $this->belongsToMany(Friend::class)
             ->using(FriendGame::class)
             ->withPivot("rating")
+            ->withTimestamps();
+    }
+
+    public function sessions(): BelongsToMany
+    {
+        return $this->belongsToMany(Session::class, "game_session")
             ->withTimestamps();
     }
 

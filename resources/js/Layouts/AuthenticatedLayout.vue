@@ -3,10 +3,14 @@ import { ref } from 'vue'
 import ApplicationLogo from '@/Components/ApplicationLogo.vue'
 import Dropdown from '@/Components/Dropdown.vue'
 import DropdownLink from '@/Components/DropdownLink.vue'
+import LanguageSwitcher from '@/Components/LanguageSwitcher.vue'
 import NavLink from '@/Components/NavLink.vue'
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue'
 import { Link } from '@inertiajs/vue3'
+import { useTranslate } from '@/composables/useTranslate'
+import ConfirmDialog from '@/Components/ConfirmDialog.vue'
 
+const { t } = useTranslate()
 const showingNavigationDropdown = ref(false)
 </script>
 
@@ -16,20 +20,15 @@ const showingNavigationDropdown = ref(false)
       <nav
         class="border-b border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
       >
-        <!-- Primary Navigation Menu -->
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div class="flex h-16 justify-between">
             <div class="flex">
-              <!-- Logo -->
               <div class="flex shrink-0 items-center">
                 <Link :href="route('dashboard')">
-                  <ApplicationLogo
-                    class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200"
-                  />
+                  <ApplicationLogo />
                 </Link>
               </div>
 
-              <!-- Navigation Links -->
               <div
                 class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
               >
@@ -37,13 +36,32 @@ const showingNavigationDropdown = ref(false)
                   :href="route('dashboard')"
                   :active="route().current('dashboard')"
                 >
-                  Dashboard
+                  {{ t('nav.dashboard') }}
+                </NavLink>
+                <NavLink
+                  :href="route('games.index')"
+                  :active="route().current('games.*')"
+                >
+                  {{ t('nav.games') }}
+                </NavLink>
+                <NavLink
+                  :href="route('friends.index')"
+                  :active="route().current('friends.*')"
+                >
+                  {{ t('nav.friends') }}
+                </NavLink>
+                <NavLink
+                  :href="route('sessions.index')"
+                  :active="route().current('sessions.*')"
+                >
+                  {{ t('nav.sessions') }}
                 </NavLink>
               </div>
             </div>
 
             <div class="hidden sm:ms-6 sm:flex sm:items-center">
-              <!-- Settings Dropdown -->
+              <LanguageSwitcher />
+
               <div class="relative ms-3">
                 <Dropdown align="right" width="48">
                   <template #trigger>
@@ -74,21 +92,20 @@ const showingNavigationDropdown = ref(false)
                     <DropdownLink
                       :href="route('profile.edit')"
                     >
-                      Profile
+                      {{ t('nav.profile') }}
                     </DropdownLink>
                     <DropdownLink
                       :href="route('logout')"
                       method="post"
                       as="button"
                     >
-                      Log Out
+                      {{ t('nav.logout') }}
                     </DropdownLink>
                   </template>
                 </Dropdown>
               </div>
             </div>
 
-            <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
               <button
                 class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none dark:text-gray-500 dark:hover:bg-gray-900 dark:hover:text-gray-400 dark:focus:bg-gray-900 dark:focus:text-gray-400"
@@ -131,7 +148,6 @@ const showingNavigationDropdown = ref(false)
           </div>
         </div>
 
-        <!-- Responsive Navigation Menu -->
         <div
           :class="{
             block: showingNavigationDropdown,
@@ -144,11 +160,28 @@ const showingNavigationDropdown = ref(false)
               :href="route('dashboard')"
               :active="route().current('dashboard')"
             >
-              Dashboard
+              {{ t('nav.dashboard') }}
+            </ResponsiveNavLink>
+            <ResponsiveNavLink
+              :href="route('games.index')"
+              :active="route().current('games.*')"
+            >
+              {{ t('nav.games') }}
+            </ResponsiveNavLink>
+            <ResponsiveNavLink
+              :href="route('friends.index')"
+              :active="route().current('friends.*')"
+            >
+              {{ t('nav.friends') }}
+            </ResponsiveNavLink>
+            <ResponsiveNavLink
+              :href="route('sessions.index')"
+              :active="route().current('sessions.*')"
+            >
+              {{ t('nav.sessions') }}
             </ResponsiveNavLink>
           </div>
 
-          <!-- Responsive Settings Options -->
           <div
             class="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600"
           >
@@ -165,21 +198,23 @@ const showingNavigationDropdown = ref(false)
 
             <div class="mt-3 space-y-1">
               <ResponsiveNavLink :href="route('profile.edit')">
-                Profile
+                {{ t('nav.profile') }}
               </ResponsiveNavLink>
               <ResponsiveNavLink
                 :href="route('logout')"
                 method="post"
                 as="button"
               >
-                Log Out
+                {{ t('nav.logout') }}
               </ResponsiveNavLink>
+              <div class="px-4 py-2">
+                <LanguageSwitcher />
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
-      <!-- Page Heading -->
       <header
         v-if="$slots.header"
         class="bg-white shadow dark:bg-gray-800"
@@ -189,10 +224,10 @@ const showingNavigationDropdown = ref(false)
         </div>
       </header>
 
-      <!-- Page Content -->
       <main>
         <slot />
       </main>
     </div>
   </div>
+  <ConfirmDialog />
 </template>
