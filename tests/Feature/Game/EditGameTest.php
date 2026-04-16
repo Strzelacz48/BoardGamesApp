@@ -23,12 +23,14 @@ test("user can update their own game", function (): void {
             "name" => "Updated Name",
             "min_players" => 2,
             "max_players" => 6,
+            "copies" => 2,
         ])
         ->assertRedirect("/games");
 
     $this->assertDatabaseHas("games", [
         "id" => $game->id,
         "name" => "Updated Name",
+        "copies" => 2,
     ]);
 });
 
@@ -41,6 +43,7 @@ test("update game accepts max_players of exactly 100", function (): void {
             "name" => "Catan",
             "min_players" => 2,
             "max_players" => 100,
+            "copies" => 1,
         ])
         ->assertRedirect("/games");
 
@@ -94,6 +97,7 @@ test("user cannot update another user's game", function (): void {
             "name" => "Updated",
             "min_players" => 2,
             "max_players" => 4,
+            "copies" => 1,
         ])
         ->assertForbidden();
 });
@@ -107,6 +111,7 @@ test("user cannot update shared game", function (): void {
             "name" => "Updated",
             "min_players" => 2,
             "max_players" => 4,
+            "copies" => 1,
         ])
         ->assertForbidden();
 });
@@ -147,4 +152,37 @@ test("update game rejects max_players above 100", function (): void {
             "max_players" => 101,
         ])
         ->assertSessionHasErrors("max_players");
+});
+
+test("update game rejects copies above 100", function (): void {
+    $user = User::factory()->create();
+    $game = Game::factory()->create(["user_id" => $user->id]);
+
+    $this->actingAs($user)
+        ->put("/games/{$game->id}", [
+            "name" => "Catan",
+            "min_players" => 2,
+            "max_players" => 4,
+            "copies" => 101,
+        ])
+        ->assertSessionHasErrors("copies");
+});
+
+test("update game accepts copies of exactly 100", function (): void {
+    $user = User::factory()->create();
+    $game = Game::factory()->create(["user_id" => $user->id]);
+
+    $this->actingAs($user)
+        ->put("/games/{$game->id}", [
+            "name" => "Catan",
+            "min_players" => 2,
+            "max_players" => 4,
+            "copies" => 100,
+        ])
+        ->assertRedirect("/games");
+
+    $this->assertDatabaseHas("games", [
+        "id" => $game->id,
+        "copies" => 100,
+    ]);
 });

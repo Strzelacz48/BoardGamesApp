@@ -86,7 +86,7 @@ function submit(): void {
               <InputError :message="form.errors.email" class="mt-2" />
             </div>
 
-            <div class="flex items-center justify-end gap-4">
+            <div class="justify-end gap-4 flex items-center ">
               <button
                 type="button"
                 class="cursor-pointer text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"

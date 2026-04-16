@@ -15,6 +15,9 @@ interface Game {
   name: string
   min_players: number
   max_players: number
+  description: string | null
+  year: number | null
+  copies: number
 }
 
 const props = defineProps<{
@@ -25,6 +28,9 @@ const form = useForm({
   name: props.game.name,
   min_players: props.game.min_players,
   max_players: props.game.max_players,
+  description: props.game.description ?? '',
+  year: props.game.year,
+  copies: props.game.copies,
 })
 
 const { cancel } = useCancelWithWarning(form, route('games.index'), t)
@@ -47,7 +53,7 @@ function submit(): void {
     <div class="py-6 sm:py-12">
       <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
         <div class="bg-white p-4 shadow-sm sm:rounded-lg sm:p-6 dark:bg-gray-800">
-          <form class="space-y-6" @submit.prevent="submit">
+          <form class="space-y-6" novalidate @submit.prevent="submit">
             <div>
               <InputLabel for="name" :value="t('games.name')" />
               <TextInput
@@ -86,6 +92,45 @@ function submit(): void {
                 />
                 <InputError :message="form.errors.max_players" class="mt-2" />
               </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <InputLabel for="year" :value="t('games.year')" />
+                <TextInput
+                  id="year"
+                  v-model.number="form.year"
+                  type="number"
+                  min="1800"
+                  :max="new Date().getFullYear()"
+                  class="mt-1 block w-full"
+                  :invalid="!!form.errors.year"
+                />
+                <InputError :message="form.errors.year" class="mt-2" />
+              </div>
+              <div>
+                <InputLabel for="copies" :value="t('games.copies')" />
+                <TextInput
+                  id="copies"
+                  v-model.number="form.copies"
+                  type="number"
+                  min="1"
+                  class="mt-1 block w-full"
+                  :invalid="!!form.errors.copies"
+                />
+                <InputError :message="form.errors.copies" class="mt-2" />
+              </div>
+            </div>
+
+            <div>
+              <InputLabel for="description" :value="t('games.description')" />
+              <textarea
+                id="description"
+                v-model="form.description"
+                rows="4"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 sm:text-sm"
+              />
+              <InputError :message="form.errors.description" class="mt-2" />
             </div>
 
             <div class="flex items-center justify-end gap-4">

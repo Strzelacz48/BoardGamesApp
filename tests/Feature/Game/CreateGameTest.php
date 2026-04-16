@@ -18,12 +18,14 @@ test("user can store a game", function (): void {
             "name" => "Catan",
             "min_players" => 2,
             "max_players" => 4,
+            "copies" => 1,
         ])
         ->assertRedirect("/games");
 
     $this->assertDatabaseHas("games", [
         "name" => "Catan",
         "user_id" => $user->id,
+        "copies" => 1,
     ]);
 });
 
@@ -35,6 +37,7 @@ test("store game accepts max_players of exactly 100", function (): void {
             "name" => "Catan",
             "min_players" => 2,
             "max_players" => 100,
+            "copies" => 1,
         ])
         ->assertRedirect("/games");
 
@@ -102,4 +105,35 @@ test("store game rejects max_players above 100", function (): void {
             "max_players" => 101,
         ])
         ->assertSessionHasErrors("max_players");
+});
+
+test("store game rejects copies above 100", function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post("/games", [
+            "name" => "Catan",
+            "min_players" => 2,
+            "max_players" => 4,
+            "copies" => 101,
+        ])
+        ->assertSessionHasErrors("copies");
+});
+
+test("store game accepts copies of exactly 100", function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post("/games", [
+            "name" => "Catan",
+            "min_players" => 2,
+            "max_players" => 4,
+            "copies" => 100,
+        ])
+        ->assertRedirect("/games");
+
+    $this->assertDatabaseHas("games", [
+        "name" => "Catan",
+        "copies" => 100,
+    ]);
 });

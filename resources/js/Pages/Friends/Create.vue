@@ -28,14 +28,18 @@ function submit() {
 
   <AuthenticatedLayout>
     <template #header>
-      <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+      <h2
+        class="text-xl leading-tight font-semibold text-gray-800 dark:text-gray-200"
+      >
         {{ t('friends.addTitle') }}
       </h2>
     </template>
 
     <div class="py-6 sm:py-12">
       <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-        <div class="bg-white p-4 shadow-sm sm:rounded-lg sm:p-6 dark:bg-gray-800">
+        <div
+          class="bg-white p-4 shadow-sm sm:rounded-lg sm:p-6 dark:bg-gray-800"
+        >
           <form class="space-y-6" @submit.prevent="submit">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
@@ -76,7 +80,7 @@ function submit() {
               <InputError :message="form.errors.email" class="mt-2" />
             </div>
 
-            <div class="flex items-center justify-end gap-4">
+            <div class="justify-end gap-4 flex items-center">
               <button
                 type="button"
                 class="cursor-pointer text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
@@ -84,7 +88,11 @@ function submit() {
               >
                 {{ t('friends.cancel') }}
               </button>
-              <PrimaryButton :disabled="form.processing">{{ t('friends.save') }}</PrimaryButton>
+              <PrimaryButton :disabled="form.processing">
+                {{
+                  t('friends.save')
+                }}
+              </PrimaryButton>
             </div>
           </form>
         </div>

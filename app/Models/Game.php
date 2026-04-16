@@ -20,7 +20,18 @@ class Game extends Model
         "is_shared",
         "min_players",
         "max_players",
+        "description",
+        "year",
+        "copies",
     ];
+
+    public static function findDuplicate(int $userId, string $name): ?self
+    {
+        return static::query()
+            ->visibleTo($userId)
+            ->whereRaw("LOWER(name) = LOWER(?)", [$name])
+            ->first();
+    }
 
     public function scopeVisibleTo(Builder $query, int $userId): Builder
     {
