@@ -10,26 +10,28 @@ use Illuminate\Support\Collection;
 
 class SeatingService
 {
-    public function arrangeFormatted(Collection $friends, Collection $games): array
+    private bool $allowUnknownPreference = true;
+
+    public function arrangeFormatted(Collection $friends, Collection $games, float $coverageWeight = 0.6, bool $allowUnknownPreference = true): array
     {
-        $raw = $this->arrange($friends, $games);
+        $raw = $this->arrange($friends, $games, $coverageWeight, $allowUnknownPreference);
 
         return [
-            "tables" => collect($raw["tables"])->map(fn($table) => [
+            "tables" => collect($raw["tables"])->map(fn(array $table): array => [
                 "game" => [
                     "id" => $table["game"]->id,
                     "name" => $table["game"]->name,
                     "min_players" => $table["game"]->min_players,
                     "max_players" => $table["game"]->max_players,
                 ],
-                "friends" => $table["friends"]->map(fn($friend) => [
+                "friends" => $table["friends"]->map(fn(Friend $friend): array => [
                     "id" => $friend->id,
                     "first_name" => $friend->first_name,
                     "last_name" => $friend->last_name,
                 ])->values(),
                 "avg_rating" => $table["avg_rating"],
             ]),
-            "unseated" => $raw["unseated"]->map(fn($friend) => [
+            "unseated" => $raw["unseated"]->map(fn(Friend $friend): array => [
                 "id" => $friend->id,
                 "first_name" => $friend->first_name,
                 "last_name" => $friend->last_name,
@@ -37,16 +39,22 @@ class SeatingService
         ];
     }
 
-    public function arrange(Collection $friends, Collection $games): array
+    public function arrange(Collection $friends, Collection $games, float $coverageWeight = 0.6, bool $allowUnknownPreference = true): array
     {
+        $this->allowUnknownPreference = $allowUnknownPreference;
+
         $friends->loadMissing("games");
+
+        $copiesRemaining = $games->mapWithKeys(fn(Game $game): array => [$game->id => $game->copies])->toArray();
 
         $unseated = collect();
         $tables = [];
         $remaining = $friends->keyBy("id");
 
         while ($remaining->isNotEmpty()) {
-            $best = $this->findBestTable($remaining, $games);
+            $availableGames = $games->filter(fn(Game $game): bool => ($copiesRemaining[$game->id] ?? 0) > 0);
+
+            $best = $this->findBestTable($remaining, $availableGames, $coverageWeight);
 
             if ($best === null) {
                 $unseated = $unseated->merge($remaining);
@@ -56,6 +64,9 @@ class SeatingService
 
             $tables[] = $best;
 
+            $gameId = $best["game"]->id;
+            $copiesRemaining[$gameId] = ($copiesRemaining[$gameId] ?? 0) - 1;
+
             foreach ($best["friends"] as $friend) {
                 $remaining->forget($friend->id);
             }
@@ -64,9 +75,10 @@ class SeatingService
         return ["tables" => $tables, "unseated" => $unseated];
     }
 
-    private function findBestTable(Collection $remaining, Collection $games): ?array
+    private function findBestTable(Collection $remaining, Collection $games, float $coverageWeight): ?array
     {
         $candidates = [];
+        $satisfactionWeight = 1.0 - $coverageWeight;
 
         foreach ($games as $game) {
             $eligible = $this->eligibleFriends($remaining, $game);
@@ -84,8 +96,6 @@ class SeatingService
                     : $eligible;
 
                 $avgRating = $this->averageRating($selected, $game);
-                $coverageWeight = 0.7;
-                $satisfactionWeight = 0.3;
                 $score = $this->compositeScore($selected->count(), $avgRating, $remaining->count(), $coverageWeight, $satisfactionWeight);
 
                 $candidates[] = [
@@ -102,7 +112,7 @@ class SeatingService
         }
 
         $bestScore = max(array_column($candidates, "score"));
-        $tied = array_values(array_filter($candidates, fn($c) => abs($c["score"] - $bestScore) < 0.0001));
+        $tied = array_values(array_filter($candidates, fn(array $candidate): bool => abs($candidate["score"] - $bestScore) < 0.0001));
         $winner = $tied[array_rand($tied)];
         unset($winner["score"]);
 
@@ -119,19 +129,23 @@ class SeatingService
 
     private function eligibleFriends(Collection $remaining, Game $game): Collection
     {
-        return $remaining->filter(function (Friend $friend) use ($game) {
+        return $remaining->filter(function (Friend $friend) use ($game): bool {
             if ($friend->games->isEmpty()) {
                 return true;
             }
 
-            return $friend->games->contains("id", $game->id);
+            if ($friend->games->contains("id", $game->id)) {
+                return true;
+            }
+
+            return $this->allowUnknownPreference;
         });
     }
 
     private function topRatedFriends(Collection $eligible, Game $game, int $limit): Collection
     {
         return $eligible
-            ->sortByDesc(fn(Friend $f) => $this->ratingFor($f, $game))
+            ->sortByDesc(fn(Friend $friend): float => $this->ratingFor($friend, $game))
             ->take($limit)
             ->values();
     }
@@ -171,23 +185,27 @@ class SeatingService
             return 0.0;
         }
 
-        $total = $friends->sum(fn(Friend $f) => $this->ratingFor($f, $game));
+        $total = $friends->sum(fn(Friend $friend): float => $this->ratingFor($friend, $game));
 
         return $total / $friends->count();
     }
 
-    private function ratingFor(Friend $friend, Game $game): int
+    private function ratingFor(Friend $friend, Game $game): float
     {
         $pivot = $friend->games->find($game->id)?->pivot;
 
         if ($pivot !== null) {
-            return $pivot->rating ?? 0;
+            return $pivot->rating ?? 0.0;
         }
 
         if ($friend->games->isEmpty()) {
-            return 5;
+            return 5.0;
         }
 
-        return 0;
+        if ($this->allowUnknownPreference) {
+            return 5.5;
+        }
+
+        return 0.0;
     }
 }

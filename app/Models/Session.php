@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,16 @@ class Session extends Model
         "date",
         "notes",
     ];
+
+    public static function findDuplicate(int $userId, string $name, string $date, ?int $excludeId = null): ?self
+    {
+        return static::query()
+            ->where("user_id", $userId)
+            ->whereRaw("LOWER(name) = LOWER(?)", [$name])
+            ->whereDate("date", $date)
+            ->when($excludeId !== null, fn(Builder $query): Builder => $query->where("id", "!=", $excludeId))
+            ->first();
+    }
 
     public function user(): BelongsTo
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,25 @@ class Friend extends Model
         "last_name",
         "email",
     ];
+
+    public static function findDuplicateByName(int $userId, string $firstName, string $lastName, ?int $excludeId = null): ?self
+    {
+        return static::query()
+            ->where("user_id", $userId)
+            ->whereRaw("LOWER(first_name) = LOWER(?)", [$firstName])
+            ->whereRaw("LOWER(last_name) = LOWER(?)", [$lastName])
+            ->when($excludeId !== null, fn(Builder $query): Builder => $query->where("id", "!=", $excludeId))
+            ->first();
+    }
+
+    public static function findDuplicateByEmail(int $userId, string $email, ?int $excludeId = null): ?self
+    {
+        return static::query()
+            ->where("user_id", $userId)
+            ->whereRaw("LOWER(email) = LOWER(?)", [$email])
+            ->when($excludeId !== null, fn(Builder $query): Builder => $query->where("id", "!=", $excludeId))
+            ->first();
+    }
 
     public function user(): BelongsTo
     {

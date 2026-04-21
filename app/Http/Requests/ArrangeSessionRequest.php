@@ -6,7 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SeatingRequest extends FormRequest
+class ArrangeSessionRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,10 +16,6 @@ class SeatingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "friend_ids" => ["required", "array", "min:1"],
-            "friend_ids.*" => ["integer", "exists:friends,id"],
-            "game_ids" => ["required", "array", "min:1"],
-            "game_ids.*" => ["integer", "exists:games,id"],
             "coverage_weight" => ["sometimes", "numeric", "between:0,1"],
             "allow_unknown_preference" => ["sometimes", "boolean"],
         ];

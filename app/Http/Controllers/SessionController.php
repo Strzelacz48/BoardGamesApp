@@ -6,11 +6,15 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateSessionAction;
 use App\Actions\UpdateSessionAction;
+use App\Http\Requests\ArrangeSessionRequest;
+use App\Http\Requests\CheckDuplicateSessionRequest;
 use App\Http\Requests\SessionRequest;
 use App\Models\Game;
 use App\Models\Session;
 use App\Services\SeatingService;
+use App\Services\SessionService;
 use App\Traits\BuildsPaginationMeta;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -35,7 +39,7 @@ class SessionController extends Controller
             : "date";
         $sortDirection = $request->input("direction") === "asc" ? "asc" : "desc";
 
-        $search = trim((string)$request->input("search", ""));
+        $search = trim($request->string("search")->value());
         $dateFrom = $request->input("date_from", "");
         $dateTo = $request->input("date_to", "");
         $dateFrom = (is_string($dateFrom) && $dateFrom !== "" && strtotime($dateFrom) !== false)
@@ -77,6 +81,18 @@ class SessionController extends Controller
                 ]),
             ],
         ]);
+    }
+
+    public function checkDuplicate(CheckDuplicateSessionRequest $request, SessionService $sessionService): JsonResponse
+    {
+        $duplicate = $sessionService->findDuplicate(
+            $request->user()->id,
+            $request->input("name"),
+            $request->input("date"),
+            $request->integer("exclude_id") ?: null,
+        );
+
+        return response()->json(compact("duplicate"));
     }
 
     public function create(Request $request): Response
@@ -136,13 +152,16 @@ class SessionController extends Controller
         return Redirect::route("sessions.index");
     }
 
-    public function arrange(Session $session): Response
+    public function arrange(ArrangeSessionRequest $request, Session $session): Response
     {
         $this->authorize("arrange", $session);
 
         $session->load(["friends.games", "games"]);
 
-        $arrangement = $this->seatingService->arrangeFormatted($session->friends, $session->games);
+        $coverageWeight = $request->float("coverage_weight", 0.6);
+        $allowUnknownPreference = $request->boolean("allow_unknown_preference", true);
+
+        $arrangement = $this->seatingService->arrangeFormatted($session->friends, $session->games, $coverageWeight, $allowUnknownPreference);
 
         return Inertia::render("Sessions/Show", [
             "session" => $session,

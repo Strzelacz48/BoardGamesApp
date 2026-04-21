@@ -31,9 +31,17 @@ Route::get("/dashboard", function () {
 Route::resource("/games", GameController::class)
     ->middleware(["auth", "verified"]);
 
+Route::post("/games/{source}/merge-into", [GameController::class, "mergeInto"])
+    ->middleware(["auth", "verified"])
+    ->name("games.mergeInto");
+
 Route::post("/games/{game}/increment-copies", [GameController::class, "incrementCopies"])
     ->middleware(["auth", "verified"])
     ->name("games.incrementCopies");
+
+Route::post("/games/{game}/decrement-copies", [GameController::class, "decrementCopies"])
+    ->middleware(["auth", "verified"])
+    ->name("games.decrementCopies");
 
 Route::post("/games/check-duplicate", [GameController::class, "checkDuplicate"])
     ->middleware(["auth", "verified"])
@@ -45,7 +53,15 @@ Route::post("/games/import-from-bgg", [GameController::class, "importFromBgg"])
 
 Route::resource("/friends", FriendController::class)->middleware(["auth", "verified"])->except(["show"]);
 
+Route::post("/friends/check-duplicate", [FriendController::class, "checkDuplicate"])
+    ->middleware(["auth", "verified"])
+    ->name("friends.checkDuplicate");
+
 Route::resource("/sessions", SessionController::class)->middleware(["auth", "verified"]);
+
+Route::post("/sessions/check-duplicate", [SessionController::class, "checkDuplicate"])
+    ->middleware(["auth", "verified"])
+    ->name("sessions.checkDuplicate");
 
 Route::post("/sessions/{session}/arrange", [SessionController::class, "arrange"])
     ->middleware(["auth", "verified"])

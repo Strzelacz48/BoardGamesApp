@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import IconButton from '@/Components/IconButton.vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useFormatDate } from '@/composables/useFormatDate'
 import { ref } from 'vue'
+import { IconEdit, IconCircleArrowLeftFilled } from '@tabler/icons-vue'
 
 const { t } = useTranslate()
 const { formatDate } = useFormatDate()
@@ -48,12 +50,17 @@ const props = defineProps<{
 
 const arranging = ref(false)
 const showArrangement = ref(!!props.arrangement)
+const coverageWeight = ref(0.6)
+const allowUnknownPreference = ref(true)
 
 const canArrange = props.session.friends.length > 0 && props.session.games.length > 0
 
 function arrange() {
   arranging.value = true
-  router.post(route('sessions.arrange', props.session.id), {}, {
+  router.post(route('sessions.arrange', props.session.id), {
+    coverage_weight: coverageWeight.value,
+    allow_unknown_preference: allowUnknownPreference.value,
+  }, {
     preserveScroll: true,
     onFinish: () => {
       arranging.value = false
@@ -77,18 +84,19 @@ function hideArrangement() {
           {{ session.name }}
         </h2>
         <div class="flex items-center gap-4">
-          <Link
-            :href="route('sessions.edit', session.id)"
-            class="text-sm text-indigo-600 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
-          >
-            {{ t('sessions.edit') }}
-          </Link>
+          <IconButton
+            :icon="IconEdit"
+            :label="t('sessions.edit')"
+            variant="default"
+            @click="router.visit(route('sessions.edit', session.id))"
+          />
           <Link
             :href="route('sessions.index')"
-            class="text-sm text-gray-600 hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-gray-100"
+            class="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-gray-100"
           >
+            <IconCircleArrowLeftFilled class="size-4" />
             {{ t('sessions.back') }}
-          </Link>
+          </Link> 
         </div>
       </div>
     </template>
@@ -147,18 +155,54 @@ function hideArrangement() {
           </ul>
         </div>
 
+        <div v-if="canArrange" class="bg-white p-4 shadow-sm sm:rounded-lg sm:p-6 dark:bg-gray-800">
+          <h3 class="mb-6 text-lg font-medium text-gray-900 dark:text-gray-100">{{ t('sessions.arrangementPriority') }}</h3>
+          <div class="space-y-2">
+            <div class="relative pt-6">
+              <span
+                class="pointer-events-none absolute top-0 whitespace-nowrap text-xs font-medium text-gray-900 dark:text-gray-100 -translate-x-1/2"
+                :style="{ left: `clamp(0%, calc(${coverageWeight * 100}% + ${(0.5 - coverageWeight) * 16}px), 100%)` }"
+              >
+                <template v-if="coverageWeight > 0.65">{{ t('sessions.prioritySeatMore') }}</template>
+                <template v-else-if="coverageWeight < 0.35">{{ t('sessions.priorityBetterFit') }}</template>
+                <template v-else>{{ t('sessions.priorityBalanced') }}</template>
+              </span>
+              <input
+                v-model.number="coverageWeight"
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                class="w-full cursor-pointer accent-indigo-600"
+              >
+            </div>
+            <div class="flex justify-between">
+              <span class="text-xs text-gray-400 dark:text-gray-500">{{ t('sessions.priorityBetterFit') }}</span>
+              <span class="text-xs text-gray-400 dark:text-gray-500">{{ t('sessions.prioritySeatMore') }}</span>
+            </div>
+          </div>
+          <label class="mt-4 flex cursor-pointer items-center gap-3">
+            <input
+              v-model="allowUnknownPreference"
+              type="checkbox"
+              class="size-4 cursor-pointer rounded border-gray-300 accent-indigo-600 dark:border-gray-600"
+            >
+            <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('sessions.allowUnknownPreference') }}</span>
+          </label>
+        </div>
+
         <div class="flex items-center gap-3">
           <button
             v-if="canArrange"
             :disabled="arranging"
-            class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="rounded-md bg-indigo-600 px-4 py-2 cursor-pointer text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             @click="arrange"
           >
             {{ arranging ? t('sessions.arranging') : (arrangement ? t('sessions.rearrange') : t('sessions.arrange')) }}
           </button>
           <button
             v-if="arrangement && showArrangement"
-            class="rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-600"
+            class="rounded-md bg-white px-4 py-2 cursor-pointer text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-600"
             @click="hideArrangement"
           >
             {{ t('sessions.hideArrangement') }}

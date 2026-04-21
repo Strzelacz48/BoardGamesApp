@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\CreateGameAction;
+use App\Actions\DecrementGameCopiesAction;
 use App\Actions\IncrementGameCopiesAction;
+use App\Actions\MergeGameCopiesAction;
 use App\Actions\UpdateGameAction;
+use App\Http\Requests\CheckDuplicateGameRequest;
+use App\Http\Requests\DecrementGameCopiesRequest;
 use App\Http\Requests\GameRequest;
+use App\Http\Requests\ImportFromBggRequest;
+use App\Http\Requests\MergeGameRequest;
 use App\Models\Game;
 use App\Services\BoardGameGeekService;
 use App\Traits\BuildsPaginationMeta;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,15 +41,15 @@ class GameController extends Controller
             : "name";
         $sortDirection = $request->input("direction") === "desc" ? "desc" : "asc";
 
-        $search = trim((string)$request->input("search", ""));
+        $search = trim($request->string("search")->value());
         $players = $request->integer("players", 0);
         $players = $players > 0 ? $players : null;
 
         $query = Game::query()->visibleTo($request->user()->id);
 
         if ($search !== "") {
-            $query->where(function ($q) use ($search): void {
-                $q->where("name", "ilike", "%{$search}%")
+            $query->where(function (Builder $subQuery) use ($search): void {
+                $subQuery->where("name", "ilike", "%{$search}%")
                     ->orWhere("description", "ilike", "%{$search}%");
             });
         }
@@ -84,13 +91,13 @@ class GameController extends Controller
         return Inertia::render("Games/Create");
     }
 
-    public function checkDuplicate(Request $request): JsonResponse
+    public function checkDuplicate(CheckDuplicateGameRequest $request): JsonResponse
     {
-        $request->validate([
-            "name" => ["required", "string", "max:255"],
-        ]);
-
-        $match = Game::findDuplicate($request->user()->id, $request->input("name"));
+        $match = Game::findDuplicate(
+            $request->user()->id,
+            $request->input("name"),
+            $request->integer("exclude_id") ?: null,
+        );
 
         if ($match === null) {
             return response()->json(["duplicate" => null]);
@@ -122,20 +129,39 @@ class GameController extends Controller
         return Redirect::route("games.index");
     }
 
-    public function importFromBgg(Request $request, BoardGameGeekService $bgg): JsonResponse
+    public function mergeInto(MergeGameRequest $request, Game $source, MergeGameCopiesAction $action): RedirectResponse
     {
-        $request->validate([
-            "url" => ["required", "string", "url"],
-        ]);
+        $this->authorize("update", $source);
 
+        $target = Game::findOrFail($request->integer("target_id"));
+        $this->authorize("incrementCopies", $target);
+
+        $action->execute($source, $target);
+
+        return Redirect::route("games.index");
+    }
+
+    public function decrementCopies(DecrementGameCopiesRequest $request, Game $game, DecrementGameCopiesAction $action): RedirectResponse
+    {
+        $this->authorize("update", $game);
+
+        $action->execute($game, $request->integer("amount"));
+
+        return Redirect::route("games.index", array_filter(
+            $request->only(["sort", "direction", "search", "players", "per_page", "page"]),
+        ));
+    }
+
+    public function importFromBgg(ImportFromBggRequest $request, BoardGameGeekService $bgg): JsonResponse
+    {
         try {
             $data = $bgg->fetchPreview($request->input("url"));
 
             return response()->json(["game" => $data]);
-        } catch (InvalidArgumentException $e) {
-            return response()->json(["message" => $e->getMessage()], 422);
-        } catch (RuntimeException $e) {
-            return response()->json(["message" => $e->getMessage()], 502);
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(["message" => $exception->getMessage()], 422);
+        } catch (RuntimeException $exception) {
+            return response()->json(["message" => $exception->getMessage()], 502);
         }
     }
 

@@ -29,8 +29,11 @@ class SeatingController extends Controller
             ->whereIn("id", $validated["game_ids"])
             ->get();
 
+        $coverageWeight = $request->float("coverage_weight", 0.6);
+        $allowUnknownPreference = $request->boolean("allow_unknown_preference", true);
+
         return response()->json(
-            $this->seatingService->arrangeFormatted($friends, $games),
+            $this->seatingService->arrangeFormatted($friends, $games, $coverageWeight, $allowUnknownPreference),
         );
     }
 }
