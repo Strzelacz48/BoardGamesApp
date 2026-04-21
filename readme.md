@@ -1,6 +1,6 @@
 ## @blumilksoftware/boardgameapp
 ### About application
-> placeholder
+This app aims to solve the issue with big friend groups that game together but have different preferences. In this app you can keep track of which of your friends likes what game and how much. You can also use this data to sort pepole to game tables that have games they like to play. 
 
 ### Local development
 ```
