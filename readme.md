@@ -1,6 +1,9 @@
 ## @blumilksoftware/boardgameapp
-### About application
-This app aims to solve the issue with big friend groups that game together but have different preferences. In this app you can keep track of which of your friends likes what game and how much. You can also use this data to sort pepole to game tables that have games they like to play. 
+## About
+
+Big friend groups play games together, but everyone likes different things.
+This app tracks which games each person enjoys and how much, then uses that
+data to sort people into game tables playing something they actually want to play. 
 
 ### Local development
 ```
