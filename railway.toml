@@ -1,4 +1,4 @@
 [deploy]
-startCommand = "php artisan config:clear && php artisan migrate --force && php-fpm83 -D && nginx -c /app/nginx.conf -g 'daemon off;'"
+startCommand = "php artisan config:clear && php artisan migrate --force && frankenphp run --config /Caddyfile"
 healthcheckPath = "/login"
 healthcheckTimeout = 300
