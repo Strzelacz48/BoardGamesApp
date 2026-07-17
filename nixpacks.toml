@@ -8,6 +8,11 @@ nixPkgs = [
   "php83Extensions.curl",
   "php83Extensions.zip",
   "php83Extensions.intl",
+  "php83Extensions.tokenizer",
+  "php83Extensions.fileinfo",
+  "php83Extensions.openssl",
+  "php83-fpm",
+  "nginx",
   "nodejs_20",
   "npm"
 ]
@@ -17,4 +22,9 @@ cmds = [
   "composer install --no-dev --optimize-autoloader",
   "npm ci",
   "npm run build"
+]
+
+[phases.build]
+cmds = [
+  "php artisan storage:link"
 ]

@@ -1,5 +1,4 @@
 [deploy]
-startCommand = "php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
+startCommand = "php artisan config:clear && php artisan migrate --force && php-fpm83 -D && nginx -c /app/nginx.conf -g 'daemon off;'"
 healthcheckPath = "/login"
-healthcheckTimeout = 600
-restartPolicyType = "never"
+healthcheckTimeout = 300
