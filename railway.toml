@@ -1,4 +1,7 @@
+[build]
+buildCommand = "composer install --no-dev --optimize-autoloader && npm ci && npm run build && php artisan config:cache && php artisan route:cache && php artisan view:cache"
+
 [deploy]
 startCommand = "php artisan config:clear && php artisan migrate --force && frankenphp run --config /Caddyfile"
-healthcheckPath = "/login"
+healthcheckPath = "/up"
 healthcheckTimeout = 300
