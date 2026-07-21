@@ -20,5 +20,3 @@ google-credentials.json
 /public/build/
 supervisord.pid
 .php-cs-fixer.cache
-resources/js/ziggy.js
-resources/js/Types/ziggy-routes.d.ts
