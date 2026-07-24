@@ -10,6 +10,7 @@ use App\Http\Requests\CheckDuplicateFriendRequest;
 use App\Http\Requests\FriendRequest;
 use App\Models\Friend;
 use App\Services\FriendService;
+use App\Support\AccountLimits;
 use App\Support\DemoAccount;
 use App\Traits\BuildsPaginationMeta;
 use Illuminate\Http\JsonResponse;
@@ -60,11 +61,15 @@ class FriendController extends Controller
 
     public function store(FriendRequest $request, CreateFriendAction $action): RedirectResponse
     {
+        $isDemo = DemoAccount::isDemo($request->user());
+
         $this->authorizeOrFail(
             "create",
             Friend::class,
-            "first_name",
-            "This is a shared public demo account, so the friends list is capped at " . DemoAccount::MAX_FRIENDS . " to keep the live demo usable for other visitors.",
+            $isDemo ? ["first_name", "demo"] : "first_name",
+            $isDemo
+                ? __("account_limits.friends_capped_demo", ["max" => DemoAccount::MAX_FRIENDS])
+                : __("account_limits.friends_capped", ["max" => AccountLimits::MAX_FRIENDS]),
         );
 
         $action->execute($request->user(), $request->validated());

@@ -13,6 +13,7 @@ use App\Models\Game;
 use App\Models\Session;
 use App\Services\SeatingService;
 use App\Services\SessionService;
+use App\Support\AccountLimits;
 use App\Support\DemoAccount;
 use App\Traits\BuildsPaginationMeta;
 use Illuminate\Http\JsonResponse;
@@ -106,11 +107,15 @@ class SessionController extends Controller
 
     public function store(SessionRequest $request, CreateSessionAction $action): RedirectResponse
     {
+        $isDemo = DemoAccount::isDemo($request->user());
+
         $this->authorizeOrFail(
             "create",
             Session::class,
-            "name",
-            "This is a shared public demo account, so sessions are capped at " . DemoAccount::MAX_SESSIONS . " to keep the live demo usable for other visitors.",
+            $isDemo ? ["name", "demo"] : "name",
+            $isDemo
+                ? __("account_limits.sessions_capped_demo", ["max" => DemoAccount::MAX_SESSIONS])
+                : __("account_limits.sessions_capped", ["max" => AccountLimits::MAX_SESSIONS]),
         );
 
         $session = $action->execute($request->user(), $request->validated());

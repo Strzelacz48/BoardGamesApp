@@ -28,17 +28,23 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request, UpdateProfileAction $action): RedirectResponse
     {
         $validated = $request->validated();
+        $user = $request->user();
 
-        if ($validated["email"] !== $request->user()->email) {
+        $changedFields = array_keys(array_filter([
+            "name" => $validated["name"] !== $user->name,
+            "email" => $validated["email"] !== $user->email,
+        ]));
+
+        if ($changedFields !== []) {
             $this->authorizeOrFail(
-                "updateEmail",
-                $request->user(),
-                "email",
-                "This is a shared public demo account, so its email address can't be changed.",
+                "updateProfile",
+                $user,
+                [...$changedFields, "demo"],
+                __("account_limits.profile_locked"),
             );
         }
 
-        $action->execute($request->user(), $validated);
+        $action->execute($user, $validated);
 
         return Redirect::route("profile.edit");
     }
@@ -48,8 +54,8 @@ class ProfileController extends Controller
         $this->authorizeOrFail(
             "delete",
             $request->user(),
-            "password",
-            "This is a shared public demo account and can't be deleted.",
+            ["password", "demo"],
+            __("account_limits.account_locked"),
         );
 
         $action->execute($request->user());

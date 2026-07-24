@@ -9,7 +9,7 @@ use App\Support\DemoAccount;
 
 class UserPolicy
 {
-    public function updateEmail(User $user, User $model): bool
+    public function updateProfile(User $user, User $model): bool
     {
         return !DemoAccount::isDemo($model);
     }

@@ -6,13 +6,16 @@ namespace App\Policies;
 
 use App\Models\Game;
 use App\Models\User;
+use App\Support\AccountLimits;
 use App\Support\DemoAccount;
 
 class GamePolicy
 {
     public function create(User $user): bool
     {
-        return !DemoAccount::isDemo($user) || Game::where("user_id", $user->id)->count() < DemoAccount::MAX_GAMES;
+        $limit = DemoAccount::isDemo($user) ? DemoAccount::MAX_GAMES : AccountLimits::MAX_GAMES;
+
+        return Game::where("user_id", $user->id)->count() < $limit;
     }
 
     public function view(User $user, Game $game): bool

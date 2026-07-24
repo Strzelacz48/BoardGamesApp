@@ -22,8 +22,8 @@ class PasswordController extends Controller
         $this->authorizeOrFail(
             "updatePassword",
             $request->user(),
-            "current_password",
-            "This is a shared public demo account, so its password can't be changed.",
+            ["current_password", "demo"],
+            __("account_limits.password_locked"),
         );
 
         $request->user()->update([

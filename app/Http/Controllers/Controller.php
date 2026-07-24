@@ -12,14 +12,12 @@ abstract class Controller
 {
     use AuthorizesRequests;
 
-    /**
-     * Like authorize(), but reports a denial as a field-scoped validation error
-     * instead of a 403 page, so it renders inline in the form that triggered it.
-     */
-    protected function authorizeOrFail(string $ability, mixed $target, string $field, string $message): void
+    protected function authorizeOrFail(string $ability, mixed $target, string|array $fields, string $message): void
     {
         if (Gate::denies($ability, $target)) {
-            throw ValidationException::withMessages([$field => $message]);
+            $fields = is_array($fields) ? $fields : [$fields];
+
+            throw ValidationException::withMessages(array_fill_keys($fields, $message));
         }
     }
 }

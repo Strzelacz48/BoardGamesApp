@@ -6,13 +6,16 @@ namespace App\Policies;
 
 use App\Models\Friend;
 use App\Models\User;
+use App\Support\AccountLimits;
 use App\Support\DemoAccount;
 
 class FriendPolicy
 {
     public function create(User $user): bool
     {
-        return !DemoAccount::isDemo($user) || Friend::where("user_id", $user->id)->count() < DemoAccount::MAX_FRIENDS;
+        $limit = DemoAccount::isDemo($user) ? DemoAccount::MAX_FRIENDS : AccountLimits::MAX_FRIENDS;
+
+        return Friend::where("user_id", $user->id)->count() < $limit;
     }
 
     public function update(User $user, Friend $friend): bool
