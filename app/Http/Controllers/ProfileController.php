@@ -27,13 +27,31 @@ class ProfileController extends Controller
 
     public function update(ProfileUpdateRequest $request, UpdateProfileAction $action): RedirectResponse
     {
-        $action->execute($request->user(), $request->validated());
+        $validated = $request->validated();
+
+        if ($validated["email"] !== $request->user()->email) {
+            $this->authorizeOrFail(
+                "updateEmail",
+                $request->user(),
+                "email",
+                "This is a shared public demo account, so its email address can't be changed.",
+            );
+        }
+
+        $action->execute($request->user(), $validated);
 
         return Redirect::route("profile.edit");
     }
 
     public function destroy(DeleteProfileRequest $request, DeleteProfileAction $action): RedirectResponse
     {
+        $this->authorizeOrFail(
+            "delete",
+            $request->user(),
+            "password",
+            "This is a shared public demo account and can't be deleted.",
+        );
+
         $action->execute($request->user());
 
         $request->session()->invalidate();

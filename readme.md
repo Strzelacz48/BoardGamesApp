@@ -3,7 +3,51 @@
 
 Big friend groups play games together, but everyone likes different things.
 This app tracks which games each person enjoys and how much, then uses that
-data to sort people into game tables playing something they actually want to play. 
+data to sort people into game tables playing something they actually want to play.
+
+### Live demo
+
+**[boardgamesapp-production.up.railway.app](https://boardgamesapp-production.up.railway.app)**
+
+Log in with a read/write demo account — no registration needed:
+
+- Email: `demo@boardgameapp.dev`
+- Password: `DemoPass123!`
+
+The demo account is pre-loaded with a sample collection: 12 games, 6 friends with rated
+preferences, and 6 past game sessions.
+
+### Screenshots
+
+**Landing page**
+![Landing page](.github/readme/Welcome_page.png)
+
+**Dashboard**
+![Dashboard](.github/readme/Dashboard_page.png)
+
+**Game collection**
+![Games](.github/readme/Games_page.png)
+
+**Adding a game (BoardGameGeek import)**
+![Add game](.github/readme/Add_game_page.png)
+
+**Delete confirmation**
+![Delete game](.github/readme/Delete_game_popup.png)
+
+**Friends & preferences**
+![Friends](.github/readme/Firends_page.png)
+
+**Game sessions**
+![Sessions](.github/readme/Sessions_page.png)
+
+### Features
+
+- Track a personal or shared board game collection, with player counts, copies owned and descriptions
+- Import a game straight from a BoardGameGeek URL instead of entering details by hand
+- Keep a friends list and record each friend's rating (1–10) for every game
+- Log game sessions and automatically seat friends at tables based on their game preferences
+- English and Polish, switchable at any time
+- Light and dark themes
 
 ### Local development
 ```

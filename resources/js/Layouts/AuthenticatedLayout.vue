@@ -9,6 +9,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue'
 import { Link } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import ConfirmDialog from '@/Components/ConfirmDialog.vue'
+import SiteFooter from '@/Components/SiteFooter.vue'
 
 const { t } = useTranslate()
 const showingNavigationDropdown = ref(false)
@@ -16,7 +17,7 @@ const showingNavigationDropdown = ref(false)
 
 <template>
   <div>
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="flex min-h-screen flex-col bg-gray-100 dark:bg-gray-900">
       <nav
         class="border-b border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
       >
@@ -224,9 +225,11 @@ const showingNavigationDropdown = ref(false)
         </div>
       </header>
 
-      <main>
+      <main class="flex-1">
         <slot />
       </main>
+
+      <SiteFooter />
     </div>
   </div>
   <ConfirmDialog />

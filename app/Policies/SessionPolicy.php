@@ -6,9 +6,15 @@ namespace App\Policies;
 
 use App\Models\Session;
 use App\Models\User;
+use App\Support\DemoAccount;
 
 class SessionPolicy
 {
+    public function create(User $user): bool
+    {
+        return !DemoAccount::isDemo($user) || Session::where("user_id", $user->id)->count() < DemoAccount::MAX_SESSIONS;
+    }
+
     public function view(User $user, Session $session): bool
     {
         return $session->user_id === $user->id;

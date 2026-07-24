@@ -10,6 +10,7 @@ use App\Http\Requests\CheckDuplicateFriendRequest;
 use App\Http\Requests\FriendRequest;
 use App\Models\Friend;
 use App\Services\FriendService;
+use App\Support\DemoAccount;
 use App\Traits\BuildsPaginationMeta;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -59,6 +60,13 @@ class FriendController extends Controller
 
     public function store(FriendRequest $request, CreateFriendAction $action): RedirectResponse
     {
+        $this->authorizeOrFail(
+            "create",
+            Friend::class,
+            "first_name",
+            "This is a shared public demo account, so the friends list is capped at " . DemoAccount::MAX_FRIENDS . " to keep the live demo usable for other visitors.",
+        );
+
         $action->execute($request->user(), $request->validated());
 
         return Redirect::route("friends.index");

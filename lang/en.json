@@ -246,5 +246,7 @@
     "common.cancelTitle": "Unsaved changes",
     "common.cancelMessage": "You have unsaved changes. Are you sure you want to leave?",
     "common.cancelConfirmLabel": "Leave",
-    "common.cancelCancelLabel": "Stay"
+    "common.cancelCancelLabel": "Stay",
+
+    "footer.sourceCode": "View source on GitHub"
 }

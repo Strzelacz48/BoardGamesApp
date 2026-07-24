@@ -13,6 +13,7 @@ use App\Models\Game;
 use App\Models\Session;
 use App\Services\SeatingService;
 use App\Services\SessionService;
+use App\Support\DemoAccount;
 use App\Traits\BuildsPaginationMeta;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -105,6 +106,13 @@ class SessionController extends Controller
 
     public function store(SessionRequest $request, CreateSessionAction $action): RedirectResponse
     {
+        $this->authorizeOrFail(
+            "create",
+            Session::class,
+            "name",
+            "This is a shared public demo account, so sessions are capped at " . DemoAccount::MAX_SESSIONS . " to keep the live demo usable for other visitors.",
+        );
+
         $session = $action->execute($request->user(), $request->validated());
 
         return Redirect::route("sessions.show", $session);
