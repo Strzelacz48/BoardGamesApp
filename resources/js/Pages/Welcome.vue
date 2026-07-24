@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue'
+import SiteFooter from '@/Components/SiteFooter.vue'
 import { useTranslate } from '@/composables/useTranslate'
 
 const { t } = useTranslate()
@@ -14,7 +15,7 @@ defineProps<{
 <template>
   <Head :title="t('welcome.title')" />
 
-  <div class="min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+  <div class="flex min-h-screen flex-col overflow-x-hidden bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
     <nav class="flex items-center justify-between p-4 sm:px-10">
       <span class="text-xl font-bold text-indigo-600 dark:text-indigo-400">
         <span class="sm:hidden">BGA</span>
@@ -49,7 +50,7 @@ defineProps<{
       </div>
     </nav>
 
-    <main class="mx-auto max-w-5xl px-4 py-10 text-center sm:px-6 sm:py-16">
+    <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-10 text-center sm:px-6 sm:py-16">
       <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-6xl dark:text-white">
         {{ t('welcome.hero1') }}
         <span class="text-indigo-600 dark:text-indigo-400">{{ t('welcome.hero2') }}</span>
@@ -106,8 +107,6 @@ defineProps<{
       </div>
     </main>
 
-    <footer class="pb-8 text-center text-sm text-gray-500 dark:text-gray-600">
-      BoardGameApp &copy; 2026
-    </footer>
+    <SiteFooter />
   </div>
 </template>

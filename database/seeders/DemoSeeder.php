@@ -30,6 +30,13 @@ class DemoSeeder extends Seeder
             ],
         );
 
+        // Wipe anything added/changed since the last reset (spam entries, edited
+        // demo data, ...) so the public demo always comes back to a clean state.
+        // Friend/session pivot rows cascade-delete with their parent row.
+        Game::where("user_id", $user->id)->delete();
+        Friend::where("user_id", $user->id)->delete();
+        Session::where("user_id", $user->id)->delete();
+
         $games = $this->seedGames($user);
         $friends = $this->seedFriends($user);
 

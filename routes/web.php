@@ -48,7 +48,7 @@ Route::post("/games/check-duplicate", [GameController::class, "checkDuplicate"])
     ->name("games.checkDuplicate");
 
 Route::post("/games/import-from-bgg", [GameController::class, "importFromBgg"])
-    ->middleware(["auth", "verified"])
+    ->middleware(["auth", "verified", "throttle:10,1"])
     ->name("games.importFromBgg");
 
 Route::resource("/friends", FriendController::class)->middleware(["auth", "verified"])->except(["show"]);

@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Game;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -52,30 +53,34 @@ class BoardGameGeekService
 
     private function fetchGameData(int $bggId): array
     {
-        try {
-            $response = Http::withToken($this->token)
-                ->timeout(15)
-                ->get("{$this->baseUrl}/thing", [
-                    "id" => $bggId,
-                    "type" => "boardgame",
+        // Game metadata on BGG almost never changes, so cache it to avoid
+        // hammering their API with repeated lookups of the same game.
+        return Cache::remember("bgg-game-{$bggId}", now()->addDay(), function () use ($bggId): array {
+            try {
+                $response = Http::withToken($this->token)
+                    ->timeout(15)
+                    ->get("{$this->baseUrl}/thing", [
+                        "id" => $bggId,
+                        "type" => "boardgame",
+                    ]);
+
+                $response->throw();
+            } catch (ConnectionException $exception) {
+                Log::error("BGG API connection failed", ["bgg_id" => $bggId, "error" => $exception->getMessage()]);
+
+                throw new RuntimeException("Could not connect to BoardGameGeek API. Please try again later.");
+            } catch (RequestException $exception) {
+                Log::error("BGG API request failed", [
+                    "bgg_id" => $bggId,
+                    "status" => $exception->response->status(),
+                    "body" => $exception->response->body(),
                 ]);
 
-            $response->throw();
-        } catch (ConnectionException $exception) {
-            Log::error("BGG API connection failed", ["bgg_id" => $bggId, "error" => $exception->getMessage()]);
+                throw new RuntimeException("BoardGameGeek API returned an error for game ID {$bggId}.");
+            }
 
-            throw new RuntimeException("Could not connect to BoardGameGeek API. Please try again later.");
-        } catch (RequestException $exception) {
-            Log::error("BGG API request failed", [
-                "bgg_id" => $bggId,
-                "status" => $exception->response->status(),
-                "body" => $exception->response->body(),
-            ]);
-
-            throw new RuntimeException("BoardGameGeek API returned an error for game ID {$bggId}.");
-        }
-
-        return $this->parseXmlResponse($response->body(), $bggId);
+            return $this->parseXmlResponse($response->body(), $bggId);
+        });
     }
 
     private function parseXmlResponse(string $xmlBody, int $bggId): array

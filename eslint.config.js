@@ -3,6 +3,6 @@ import blumilkTypescript from '@blumilksoftware/eslint-config/typescript-config.
 export default [
   ...blumilkTypescript,
   {
-    ignores: ['resources/js/ziggy.js', 'resources/js/Types/ziggy.d.ts'],
+    ignores: ['resources/js/Types/ziggy.d.ts', 'resources/js/Types/ziggy-routes.d.ts'],
   },
 ]

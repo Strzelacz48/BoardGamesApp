@@ -246,5 +246,9 @@
     "common.cancelTitle": "Niezapisane zmiany",
     "common.cancelMessage": "Masz niezapisane zmiany. Czy na pewno chcesz wyjść?",
     "common.cancelConfirmLabel": "Wyjdź",
-    "common.cancelCancelLabel": "Zostań"
+    "common.cancelCancelLabel": "Zostań",
+    "common.demoRestrictedTitle": "Akcja zablokowana",
+    "common.ok": "OK",
+
+    "footer.sourceCode": "Zobacz kod źródłowy na GitHubie"
 }

@@ -19,6 +19,13 @@ class PasswordController extends Controller
             "password" => ["required", Password::defaults(), "confirmed"],
         ]);
 
+        $this->authorizeOrFail(
+            "updatePassword",
+            $request->user(),
+            ["current_password", "demo"],
+            __("account_limits.password_locked"),
+        );
+
         $request->user()->update([
             "password" => Hash::make($validated["password"]),
         ]);

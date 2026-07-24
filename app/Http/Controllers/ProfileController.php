@@ -27,13 +27,37 @@ class ProfileController extends Controller
 
     public function update(ProfileUpdateRequest $request, UpdateProfileAction $action): RedirectResponse
     {
-        $action->execute($request->user(), $request->validated());
+        $validated = $request->validated();
+        $user = $request->user();
+
+        $changedFields = array_keys(array_filter([
+            "name" => $validated["name"] !== $user->name,
+            "email" => $validated["email"] !== $user->email,
+        ]));
+
+        if ($changedFields !== []) {
+            $this->authorizeOrFail(
+                "updateProfile",
+                $user,
+                [...$changedFields, "demo"],
+                __("account_limits.profile_locked"),
+            );
+        }
+
+        $action->execute($user, $validated);
 
         return Redirect::route("profile.edit");
     }
 
     public function destroy(DeleteProfileRequest $request, DeleteProfileAction $action): RedirectResponse
     {
+        $this->authorizeOrFail(
+            "delete",
+            $request->user(),
+            ["password", "demo"],
+            __("account_limits.account_locked"),
+        );
+
         $action->execute($request->user());
 
         $request->session()->invalidate();

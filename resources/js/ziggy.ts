@@ -1,4 +1,4 @@
-import { ZiggyVue } from '../../vendor/tightenco/ziggy'
+import type { ZiggyVue } from '../../vendor/tightenco/ziggy'
 
 type ZiggyConfig = NonNullable<Parameters<typeof ZiggyVue.install>[1]>
 

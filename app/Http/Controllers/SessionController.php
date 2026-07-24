@@ -13,6 +13,8 @@ use App\Models\Game;
 use App\Models\Session;
 use App\Services\SeatingService;
 use App\Services\SessionService;
+use App\Support\AccountLimits;
+use App\Support\DemoAccount;
 use App\Traits\BuildsPaginationMeta;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -105,6 +107,17 @@ class SessionController extends Controller
 
     public function store(SessionRequest $request, CreateSessionAction $action): RedirectResponse
     {
+        $isDemo = DemoAccount::isDemo($request->user());
+
+        $this->authorizeOrFail(
+            "create",
+            Session::class,
+            $isDemo ? ["name", "demo"] : "name",
+            $isDemo
+                ? __("account_limits.sessions_capped_demo", ["max" => DemoAccount::MAX_SESSIONS])
+                : __("account_limits.sessions_capped", ["max" => AccountLimits::MAX_SESSIONS]),
+        );
+
         $session = $action->execute($request->user(), $request->validated());
 
         return Redirect::route("sessions.show", $session);

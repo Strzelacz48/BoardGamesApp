@@ -8,7 +8,6 @@ use App\Actions\SyncPreferencesAction;
 use App\Http\Requests\PreferenceRequest;
 use App\Models\Friend;
 use App\Models\Game;
-use App\Services\PreferenceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -17,10 +16,6 @@ use Inertia\Response;
 
 class PreferenceController extends Controller
 {
-    public function __construct(
-        private PreferenceService $preferenceService,
-    ) {}
-
     public function show(Request $request, Friend $friend): Response
     {
         $this->authorize("managePreferences", $friend);

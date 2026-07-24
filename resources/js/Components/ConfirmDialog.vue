@@ -46,6 +46,7 @@ const { isOpen, options, onConfirm, onCancel } = useConfirmDialog()
 
             <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
+                v-if="options.cancelLabel"
                 type="button"
                 class="cursor-pointer rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                 @click="onCancel"

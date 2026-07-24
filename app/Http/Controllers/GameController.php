@@ -16,6 +16,8 @@ use App\Http\Requests\ImportFromBggRequest;
 use App\Http\Requests\MergeGameRequest;
 use App\Models\Game;
 use App\Services\BoardGameGeekService;
+use App\Support\AccountLimits;
+use App\Support\DemoAccount;
 use App\Traits\BuildsPaginationMeta;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -115,6 +117,17 @@ class GameController extends Controller
 
     public function store(GameRequest $request, CreateGameAction $action): RedirectResponse
     {
+        $isDemo = DemoAccount::isDemo($request->user());
+
+        $this->authorizeOrFail(
+            "create",
+            Game::class,
+            $isDemo ? ["name", "demo"] : "name",
+            $isDemo
+                ? __("account_limits.games_capped_demo", ["max" => DemoAccount::MAX_GAMES])
+                : __("account_limits.games_capped", ["max" => AccountLimits::MAX_GAMES]),
+        );
+
         $action->execute($request->user(), $request->validated());
 
         return Redirect::route("games.index");
